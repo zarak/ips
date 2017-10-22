@@ -15,31 +15,29 @@ class VendorViewStateSpider(scrapy.Spider):
                     'ctl00$ContentPlaceHolder1$ddlState': u'CO',
                     # '__VIEWSTATE': response.css('input#__VIEWSTATE::attr(value)').extract_first()
                 },
-                callback=self.parse_page
+                callback=self.next_page
         )
 
     def next_page(self, response):
         self.page_num += 1
+        self.parse_page(response)
         yield scrapy.FormRequest.from_response(
                 response=response,
                 formdata={
                     # 'ctl00$ContentPlaceHolder1$ddlState': u'CO',
-                    '__EVENTARGUMENT': 'Page$2',
-                    '__EVENTTARGET': 'ctl00$ContentPlaceHolder1$gvVendorList'
-                    # '__VIEWSTATE': response.css('input#__VIEWSTATE::attr(value)').extract_first()
+                    '__EVENTARGUMENT': 'Page${}'.format(self.page_num),
+                    '__EVENTTARGET': 'ctl00$ContentPlaceHolder1$gvVendorList',
+                    '__VIEWSTATE': response.css('input#__VIEWSTATE::attr(value)').extract_first()
                 },
-                callback=self.parse_page
+                callback=self.next_page
         )
 
 
     def parse_page(self, response):
         # x = response.xpath('//*[@id="content"]')
-        tbody = response.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvVendorList"]/tbody').extract()
-        # data['company_name'] = response.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvVendorList_ctl03_hlCompanyName"]/text()')
-        data = {}
-        for i, item in enumerate(tbody):
-            data[i] = item.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvVendorList"]/tbody/tr[{}]'.format(i)).extract()
-        yield data
+        # tbody = response.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvVendorList"]/tbody').extract()
+        y = response.xpath('//*[@id="ctl00_ContentPlaceHolder1_gvVendorList_ctl03_hlCompanyName"]/text()').extract()
+        yield y
 
 
 
