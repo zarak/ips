@@ -63,34 +63,31 @@ class VendorFinderScraper(object):
             
                 # Pagination
                 try:
-                    # prop = self.driver.find_element_by_xpath('//*[@id="ctl00_ContentPlaceHolder1_gvVendorList"]/tbody/tr[1]/td/table/tbody/tr/td[{}]'.format(pageno))
-                    prop = self.driver.find_element_by_xpath("//a[text()='{}']".format(pageno))
-                    
-                    # next_page_elem = prop.find_element_by_xpath('.//a')
-                    next_page_elem = prop
-                    
-                    # next_page_elem = self.driver.find_element_by_xpath("//a[text()='%d']" % pageno)
+                    next_page_elem = self.driver.find_element_by_xpath(
+                            '//a[@href="javascript:__doPostBack(\'ctl00$ContentPlaceHolder1$gvVendorList\',\'Page${}\')"]'.format(pageno))
+                    # next_page_elem = self.driver.find_element_by_xpath("//a[text()='{}']".format(pageno))
                 except NoSuchElementException:
                     print("No more pages")
                     break
 
                 next_page_elem.click()
 
-                def next_page(driver):
-                    '''
-                    Wait until the next page background color changes indicating
-                    that it is now the currently selected page
-                    '''
-                    # prop = driver.find_element_by_xpath('//*[@id="ctl00_ContentPlaceHolder1_gvVendorList"]/tbody/tr[1]/td/table/tbody/tr/td[{}]'.format(pageno))
-                        # prop.find_element_by_xpath('.//span')
-                    try:
-                        self.driver.find_element_by_xpath("//a[text()='{}']".format(pageno))
-                    except NoSuchElementException:
-                        return False
-                    return True
+                # def next_page(driver):
+                    # '''
+                    # Wait until the next page background color changes indicating
+                    # that it is now the currently selected page
+                    # '''
+                    # # prop = driver.find_element_by_xpath('//*[@id="ctl00_ContentPlaceHolder1_gvVendorList"]/tbody/tr[1]/td/table/tbody/tr/td[{}]'.format(pageno))
+                        # # prop.find_element_by_xpath('.//span')
+                    # try:
+                        # self.driver.find_element_by_xpath("//a[text()='{}']".format(pageno))
+                    # except NoSuchElementException:
+                        # return False
+                    # return True
 
                 wait = WebDriverWait(self.driver, 10)
-                wait.until(EC.element_to_be_clickable((By.XPATH, "//a[text()='{}']".format(pageno-1))))
+                wait.until(EC.element_to_be_clickable((By.XPATH,
+                    '//a[@href="javascript:__doPostBack(\'ctl00$ContentPlaceHolder1$gvVendorList\',\'Page${}\')"]'.format(pageno-1))))
 
                 pageno += 1
 
