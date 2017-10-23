@@ -1,3 +1,4 @@
 *pyc
 ghostdriver.log
 *.csv
+.DS_Store
