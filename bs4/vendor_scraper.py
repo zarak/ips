@@ -82,17 +82,15 @@ class VendorFinderScraper(object):
                     that it is now the currently selected page
                     '''
                     # prop = driver.find_element_by_xpath('//*[@id="ctl00_ContentPlaceHolder1_gvVendorList"]/tbody/tr[1]/td/table/tbody/tr/td[{}]'.format(pageno))
-                    try:
                         # prop.find_element_by_xpath('.//span')
+                    try:
                         self.driver.find_element_by_xpath("//a[text()='{}']".format(pageno))
                     except NoSuchElementException:
                         return False
                     return True
 
-
-                
                 wait = WebDriverWait(self.driver, 10)
-                wait.until(next_page)
+                wait.until(EC.element_to_be_clickable((By.XPATH, "//a[text()='{}']".format(pageno-1))))
 
                 pageno += 1
 
