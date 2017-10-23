@@ -7,6 +7,7 @@ Python script for scraping the results from https://www.ips.state.nc.us/vendor/S
 
 import re
 import string
+import pandas as pd
 from urllib.parse import urlparse, urljoin
 
 from selenium import webdriver
@@ -32,14 +33,33 @@ class VendorFinderScraper(object):
         select = Select(self.driver.find_element_by_id('ctl00_ContentPlaceHolder1_ddlState'))
         return select
 
+    def parse_page(self, soup):
+        """Returns a dataframe which contains the information from the html
+        table of a page."""
+        table = soup.findAll('table', {'id': 'ctl00_ContentPlaceHolder1_gvVendorList'})[0]
+        df = pd.read_html(table.prettify())[0]
+        col_length = len(df.columns)
+        if col_length > 7:
+            df = df.drop(range(8, col_length), axis=1)
+        # df = df.drop([8, 9], axis=1)
+        df = df.drop(df.index[:3])
+        df = df.drop(df.index[-2:])
+        print(df.head())
+        return df
+        
+    def final_dataframe(self, dataframes, columns):
+        df = pd.concat(dataframes)
+        df.columns = columns
+        return df
 
     def scrape(self):
+        dataframes = []
         self.driver.get(self.url)
     
         # Select state selection dropdown
         select = Select(self.driver.find_element_by_id('ctl00_ContentPlaceHolder1_ddlState'))
         # option_indexes = range(1, len(select.options))
-        option_indexes = range(1, 8)
+        option_indexes = range(1, 4)
 
 
         # Iterate through each state
@@ -57,9 +77,14 @@ class VendorFinderScraper(object):
 
             while True:
                 s = BeautifulSoup(self.driver.page_source, "lxml")
-                name = s.find('a', attrs={'id': 'ctl00_ContentPlaceHolder1_gvVendorList_ctl03_hlCompanyName'}).text
-                print("firm name: ", name)
-                print()
+                # name = s.find('a', attrs={'id': 'ctl00_ContentPlaceHolder1_gvVendorList_ctl03_hlCompanyName'}).text
+                # print("firm name: ", name)
+                # print()
+
+                df = self.parse_page(s)
+                if not df.empty:
+                    dataframes.append(df)
+                
             
                 # Pagination
                 try:
@@ -93,6 +118,9 @@ class VendorFinderScraper(object):
 
             # Reset search for next state
             select = self.next_state()
+        columns = [item.text for item in s.findAll('th')]
+        final_df = self.final_dataframe(dataframes, columns)
+        final_df.to_csv('ins_scraped.csv', index=False)
 
         self.driver.quit()
 
