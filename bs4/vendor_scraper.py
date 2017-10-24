@@ -46,6 +46,15 @@ class VendorFinderScraper(object):
         df = df.drop(df.index[-2:])
         print(df.head())
         return df
+
+    def contact_info_columns(self, df):
+        fax = df['Contact Info'].str.extract(r'Fax:  (\(?\d{3}\D*\d{3}\D*\d{4})')
+        fax.name = 'Fax'
+        toll_free = df['Contact Info'].str.extract(r'TollFree:  (\(?\d{3,4}\D*\d{3}\D*\d{4})')
+        toll_free.name = 'TollFree'
+        contact_info = df['Contact Info'].str.extract(r'^Contact:  (?P<Name>.*)  Phone:  (?P<Phone>.*) x.*  Email:  (?P<Email>.*)$')
+        combined = pd.concat([df, contact_info, fax, toll_free], axis=1) 
+        return combined
         
     def final_dataframe(self, dataframes, columns):
         df = pd.concat(dataframes)
@@ -58,13 +67,11 @@ class VendorFinderScraper(object):
     
         # Select state selection dropdown
         select = Select(self.driver.find_element_by_id('ctl00_ContentPlaceHolder1_ddlState'))
-        # option_indexes = range(1, len(select.options))
-        option_indexes = range(1, 4)
-
+        option_indexes = range(1, len(select.options))
+        # option_indexes = range(1, 4)
 
         # Iterate through each state
         for index in option_indexes:
-            
             select.select_by_index(index)
             self.driver.find_element_by_id('ctl00_ContentPlaceHolder1_btnSearch').click()
 
@@ -77,38 +84,20 @@ class VendorFinderScraper(object):
 
             while True:
                 s = BeautifulSoup(self.driver.page_source, "lxml")
-                # name = s.find('a', attrs={'id': 'ctl00_ContentPlaceHolder1_gvVendorList_ctl03_hlCompanyName'}).text
-                # print("firm name: ", name)
-                # print()
 
                 df = self.parse_page(s)
                 if not df.empty:
                     dataframes.append(df)
-                
             
                 # Pagination
                 try:
                     next_page_elem = self.driver.find_element_by_xpath(
                             '//a[@href="javascript:__doPostBack(\'ctl00$ContentPlaceHolder1$gvVendorList\',\'Page${}\')"]'.format(pageno))
-                    # next_page_elem = self.driver.find_element_by_xpath("//a[text()='{}']".format(pageno))
                 except NoSuchElementException:
                     print("No more pages")
                     break
 
                 next_page_elem.click()
-
-                # def next_page(driver):
-                    # '''
-                    # Wait until the next page background color changes indicating
-                    # that it is now the currently selected page
-                    # '''
-                    # # prop = driver.find_element_by_xpath('//*[@id="ctl00_ContentPlaceHolder1_gvVendorList"]/tbody/tr[1]/td/table/tbody/tr/td[{}]'.format(pageno))
-                        # # prop.find_element_by_xpath('.//span')
-                    # try:
-                        # self.driver.find_element_by_xpath("//a[text()='{}']".format(pageno))
-                    # except NoSuchElementException:
-                        # return False
-                    # return True
 
                 wait = WebDriverWait(self.driver, 10)
                 wait.until(EC.element_to_be_clickable((By.XPATH,
@@ -120,6 +109,7 @@ class VendorFinderScraper(object):
             select = self.next_state()
         columns = [item.text for item in s.findAll('th')]
         final_df = self.final_dataframe(dataframes, columns)
+        final_df = self.contact_info_columns(final_df)
         final_df.to_csv('ins_scraped.csv', index=False)
 
         self.driver.quit()
