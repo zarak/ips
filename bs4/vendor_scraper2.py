@@ -77,7 +77,7 @@ class VendorFinderScraper(object):
         fax.name = 'Fax'
         toll_free = df['Contact Info'].str.extract(r'TollFree:  (\(?\d{3,4}\D*\d{3}\D*\d{4})')
         toll_free.name = 'TollFree'
-        contact_info = df['Contact Info'].str.extract(r'^Contact:  (?P<Name>.*)  Phone:  (?P<Phone>.*) x.*  Email:  (?P<Email>.*)$')
+        contact_info = df['Contact Info'].str.extract(r'^Contact:  (?P<Name>.*)  Phone:  (?P<Phone>.*)  Email:  (?P<Email>.*)$')
         combined = pd.concat([df, contact_info, fax, toll_free], axis=1) 
         return combined
         
@@ -119,7 +119,7 @@ class VendorFinderScraper(object):
                 if not df.empty:
                     # dataframes.append(df)
                     single_page_dfs.append(df)
-                print("Scraping page number", pageno)
+                print("Scraped page number", pageno)
             
                 # Pagination
                 try:
