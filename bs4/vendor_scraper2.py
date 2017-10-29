@@ -54,10 +54,23 @@ class VendorFinderScraper(object):
         col_length = len(df.columns)
         if col_length > 7:
             df = df.drop(range(8, col_length), axis=1)
-        df = df.drop(df.index[:3])
-        df = df.drop(df.index[-2:])
-        print(df.head())
-        return df
+        total_records_id = 'ctl00_ContentPlaceHolder1_lblTotalRecords'
+        total_records_string = soup.findAll('span', {'id':
+            total_records_id})[0].text
+        print(total_records_string)
+        total_records = [int(s) for s in total_records_string.split() if
+                s.isdigit()][0]
+
+        if total_records <= 15:
+            df = df.drop(df.index[:1])
+            print(df.head())
+            return df
+        else:
+            df = df.drop(df.index[:3])
+            df = df.drop(df.index[-2:])
+            print(df.head())
+            return df
+
 
     def contact_info_columns(self, df):
         fax = df['Contact Info'].str.extract(r'Fax:  (\(?\d{3}\D*\d{3}\D*\d{4})')
@@ -98,13 +111,15 @@ class VendorFinderScraper(object):
 
             pageno = 2
 
+            single_page_dfs = []
             while True:
-                print("Scraping page number", pageno)
                 s = BeautifulSoup(self.driver.page_source, "lxml")
 
                 df = self.parse_page(s)
                 if not df.empty:
-                    dataframes.append(df)
+                    # dataframes.append(df)
+                    single_page_dfs.append(df)
+                print("Scraping page number", pageno)
             
                 # Pagination
                 try:
@@ -122,11 +137,15 @@ class VendorFinderScraper(object):
 
                 pageno += 1
             # Add column of current search term here
-            df[self.category] = current_search_term
-            print("#"*20)
-            print("Dataframe for", current_search_term)
-            print(df.head())
-            print("#"*20)
+            if not df.empty: # If first page df is not empty
+                category_df = pd.concat(single_page_dfs)
+                category_df[self.category] = current_search_term
+                print("#"*60)
+                print("Dataframe for", current_search_term)
+                print(category_df.head())
+                print("Dataframe shape:", category_df.shape)
+                print("#"*60)
+                dataframes.append(category_df)
 
             # Reset search for next state
             select = self.next_state()
@@ -141,5 +160,5 @@ class VendorFinderScraper(object):
 
 
 if __name__ == '__main__':
-    scraper = VendorFinderScraper('Construction/Design Services')
+    scraper = VendorFinderScraper()
     scraper.scrape()
