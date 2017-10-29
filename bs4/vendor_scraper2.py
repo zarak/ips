@@ -39,7 +39,7 @@ class VendorFinderScraper(object):
         id_dict = {
                 'State': 'ctl00_ContentPlaceHolder1_ddlState',
                 'Construction Codes': 'ctl00_ContentPlaceHolder1_lboxSicCodes',
-                'Construction License': 'ctl00_ContentPlaceHolder1_ddlConstructionLicense'
+                'Construction License': 'ctl00_ContentPlaceHolder1_ddlConstructionLicense',
                 'Construction/Design Services': 'ctl00_ContentPlaceHolder1_lboxConstructionServices',
                 'Limitations': 'ctl00_ContentPlaceHolder1_ddlLimitations',
                 'Work Classification/License Specialty': 'ctl00_ContentPlaceHolder1_lboxLicense'
@@ -141,5 +141,5 @@ class VendorFinderScraper(object):
 
 
 if __name__ == '__main__':
-    scraper = VendorFinderScraper()
+    scraper = VendorFinderScraper('Construction/Design Services')
     scraper.scrape()
