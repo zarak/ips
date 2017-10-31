@@ -154,7 +154,10 @@ class VendorFinderScraper(object):
         print("Constructing final dataframe...")
         final_df = self.final_dataframe(dataframes, columns)
         final_df = self.contact_info_columns(final_df)
-        final_df.to_csv('ins_scraped_{}.csv'.format(self.category), index=False)
+        filename = 'ins_scraped_{}.csv'.format(
+                # Remove problematic characters in filename
+                self.category).replace(' ', '_').replace('/', '_')
+        final_df.to_csv(filename, index=False)
 
         self.driver.quit()
 
