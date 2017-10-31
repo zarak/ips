@@ -8,7 +8,11 @@ Python script for scraping the results from https://www.ips.state.nc.us/vendor/S
 import re
 import string
 import pandas as pd
-from urllib.parse import urlparse, urljoin
+# If using Python 2, import urlparse instead
+try:
+    from urllib.parse import urlparse, urljoin
+except:
+    from urlparse import urlparse, urljoin
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
