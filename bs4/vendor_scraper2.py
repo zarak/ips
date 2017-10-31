@@ -119,7 +119,7 @@ class VendorFinderScraper(object):
                 if not df.empty:
                     # dataframes.append(df)
                     single_page_dfs.append(df)
-                print("Scraped page number", pageno)
+                print("Scraped page number", pageno-1)
             
                 # Pagination
                 try:
@@ -154,11 +154,11 @@ class VendorFinderScraper(object):
         print("Constructing final dataframe...")
         final_df = self.final_dataframe(dataframes, columns)
         final_df = self.contact_info_columns(final_df)
-        final_df.to_csv('ins_scraped.csv', index=False)
+        final_df.to_csv('ins_scraped_{}.csv'.format(self.category), index=False)
 
         self.driver.quit()
 
 
 if __name__ == '__main__':
-    scraper = VendorFinderScraper()
+    scraper = VendorFinderScraper('Work Classification/License Specialty')
     scraper.scrape()
