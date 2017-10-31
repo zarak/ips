@@ -28,7 +28,10 @@ class VendorFinderScraper(object):
         self.driver = webdriver.PhantomJS()
         self.driver.set_window_size(1120, 550)
         self.category = category
-        self.search_id = self.get_search_id(category)
+        try:
+            self.search_id = self.get_search_id(category)
+        except KeyError:
+            raise ValueError("Invalid category")
 
     def next_state(self):
         """Click on new search"""
@@ -46,7 +49,8 @@ class VendorFinderScraper(object):
                 'Construction License': 'ctl00_ContentPlaceHolder1_ddlConstructionLicense',
                 'Construction/Design Services': 'ctl00_ContentPlaceHolder1_lboxConstructionServices',
                 'Limitations': 'ctl00_ContentPlaceHolder1_ddlLimitations',
-                'Work Classification/License Specialty': 'ctl00_ContentPlaceHolder1_lboxLicense'
+                'Work Classification/License Specialty': 'ctl00_ContentPlaceHolder1_lboxLicense',
+                'Commodities': 'ctl00_ContentPlaceHolder1_lboxCommodity'
                 }
         return id_dict[category]
 
@@ -167,5 +171,5 @@ class VendorFinderScraper(object):
 
 
 if __name__ == '__main__':
-    scraper = VendorFinderScraper('Work Classification/License Specialty')
+    scraper = VendorFinderScraper('Work Classification/License pecialty')
     scraper.scrape()
